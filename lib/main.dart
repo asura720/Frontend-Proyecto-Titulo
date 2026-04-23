@@ -7,8 +7,6 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'providers/medication_provider.dart';
 import 'providers/auth_provider.dart';
 import 'providers/user_provider.dart';
-import 'providers/location_provider.dart';
-import 'providers/establishments_provider.dart';
 import 'screens/main_nav_screen.dart';
 import 'screens/login_screen.dart';
 
@@ -33,8 +31,6 @@ void main() async {
           },
         ),
         ChangeNotifierProvider(create: (_) => MedicationProvider()),
-        ChangeNotifierProvider(create: (_) => LocationProvider()),
-        ChangeNotifierProvider(create: (_) => EstablishmentsProvider()),
       ],
       child: const CuidApp(),
     ),
