@@ -7,16 +7,18 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'providers/medication_provider.dart';
 import 'providers/auth_provider.dart';
 import 'providers/user_provider.dart';
+import 'providers/location_provider.dart';
+import 'providers/establishments_provider.dart';
 import 'screens/main_nav_screen.dart';
 import 'screens/login_screen.dart';
 
 void main() async {
   // Aseguramos que los bindings de Flutter estén listos
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   // Inicializamos el formateo de fechas en español
   await initializeDateFormatting('es', null);
-  
+
   runApp(
     // El MultiProvider envuelve toda la app para que los datos fluyan
     MultiProvider(
@@ -31,6 +33,8 @@ void main() async {
           },
         ),
         ChangeNotifierProvider(create: (_) => MedicationProvider()),
+        ChangeNotifierProvider(create: (_) => LocationProvider()),
+        ChangeNotifierProvider(create: (_) => EstablishmentsProvider()),
       ],
       child: const CuidApp(),
     ),
@@ -45,14 +49,14 @@ class CuidApp extends StatelessWidget {
     return MaterialApp(
       title: 'CuidApp',
       debugShowCheckedModeBanner: false,
-      
+
       // Configuración del tema visual basado en diseño Figma
       theme: ThemeData(
         useMaterial3: true,
-        
+
         // Aplicamos la fuente para legibilidad de adultos mayores
         textTheme: GoogleFonts.robotoTextTheme(Theme.of(context).textTheme),
-        
+
         // Paleta de colores según Figma
         colorScheme: const ColorScheme.light(
           primary: Color(0xFF030213), // Negro oscuro
@@ -67,14 +71,14 @@ class CuidApp extends StatelessWidget {
           onSurface: Color(0xFF030213), // Texto sobre surface
           onError: Color(0xFFffffff), // Texto sobre error
         ),
-        
+
         // Estilo global para los AppBar
         appBarTheme: const AppBarTheme(
           backgroundColor: Color(0xFF1A56DB),
           foregroundColor: Color(0xFFffffff),
           elevation: 0,
         ),
-        
+
         // Estilo para botones elevados
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
@@ -86,7 +90,7 @@ class CuidApp extends StatelessWidget {
             ),
           ),
         ),
-        
+
         // Estilo para inputs
         inputDecorationTheme: InputDecorationTheme(
           filled: true,
@@ -103,14 +107,19 @@ class CuidApp extends StatelessWidget {
             borderRadius: BorderRadius.circular(10),
             borderSide: const BorderSide(color: Color(0xFF030213), width: 2),
           ),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 12,
+          ),
         ),
       ),
 
       // El punto de entrada decide basado en el estado de autenticación
       home: Consumer<AuthProvider>(
         builder: (context, authProvider, _) {
-          return authProvider.isLoggedIn ? const MainNavScreen() : const LoginScreen();
+          return authProvider.isLoggedIn
+              ? const MainNavScreen()
+              : const LoginScreen();
         },
       ),
     );

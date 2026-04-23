@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
+import '../providers/location_provider.dart';
+import '../providers/establishments_provider.dart';
+import '../models/location.dart';
 
 class MapScreen extends StatefulWidget {
   const MapScreen({super.key});
@@ -9,177 +14,436 @@ class MapScreen extends StatefulWidget {
 }
 
 class _MapScreenState extends State<MapScreen> {
-  // Datos simulados de farmacias y centros médicos
-  final List<Map<String, dynamic>> locations = [
-    {
-      'name': 'Farmacia Central',
-      'type': 'pharmacy',
-      'address': 'Calle Principal 123',
-      'phone': '+1 (555) 123-4567',
-      'distance': '0.5 km',
-      'hours': '8:00 AM - 10:00 PM',
-      'icon': Icons.local_pharmacy,
-    },
-    {
-      'name': 'Hospital San José',
-      'type': 'hospital',
-      'address': 'Avenida Central 456',
-      'phone': '+1 (555) 987-6543',
-      'distance': '1.2 km',
-      'hours': 'Abierto 24h',
-      'icon': Icons.local_hospital,
-    },
-    {
-      'name': 'Farmacia Santa María',
-      'type': 'pharmacy',
-      'address': 'Calle Segunda 789',
-      'phone': '+1 (555) 456-7890',
-      'distance': '0.8 km',
-      'hours': '8:00 AM - 9:00 PM',
-      'icon': Icons.local_pharmacy,
-    },
-    {
-      'name': 'Clínica de Atención',
-      'type': 'clinic',
-      'address': 'Avenida Principal 321',
-      'phone': '+1 (555) 654-3210',
-      'distance': '1.5 km',
-      'hours': '8:00 AM - 6:00 PM',
-      'icon': Icons.local_hospital,
-    },
-  ];
-
+  GoogleMapController? mapController;
   String _filterType = 'all';
+  Set<Marker> _markers = {};
+
+  @override
+  void dispose() {
+    mapController?.dispose();
+    super.dispose();
+  }
+
+  void _onMapCreated(GoogleMapController controller) {
+    mapController = controller;
+    _fetchAndUpdateMarkers();
+  }
+
+  Future<void> _fetchAndUpdateMarkers() async {
+    final loc = context.read<LocationProvider>();
+    final est = context.read<EstablishmentsProvider>();
+    await est.fetchNearby(loc.userLatitude, loc.userLongitude, _filterType);
+    if (mounted) _updateMarkers();
+  }
+
+  void _updateMarkers() {
+    final loc = context.read<LocationProvider>();
+    final est = context.read<EstablishmentsProvider>();
+
+    Set<Marker> newMarkers = {};
+
+    final userLat = loc.userLatitude;
+    final userLon = loc.userLongitude;
+
+    if (userLat != 0 && userLon != 0) {
+      newMarkers.add(
+        Marker(
+          markerId: const MarkerId('user_location'),
+          position: LatLng(userLat, userLon),
+          infoWindow: const InfoWindow(
+            title: 'Tu Ubicación',
+            snippet: 'Aquí estás en este momento',
+          ),
+          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
+        ),
+      );
+    }
+
+    for (var establishment in est.establishments) {
+      BitmapDescriptor markerColor;
+      String typeLabel;
+
+      if (establishment.type == 'pharmacy') {
+        markerColor = BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen);
+        typeLabel = 'Farmacia';
+      } else if (establishment.type == 'hospital') {
+        markerColor = BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed);
+        typeLabel = 'Hospital';
+      } else {
+        markerColor = BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueOrange);
+        typeLabel = 'Clínica';
+      }
+
+      newMarkers.add(
+        Marker(
+          markerId: MarkerId('${establishment.type}_${establishment.name}'),
+          position: LatLng(establishment.latitude, establishment.longitude),
+          infoWindow: InfoWindow(
+            title: establishment.name,
+            snippet: '$typeLabel · ${establishment.distance.toStringAsFixed(1)} km'
+                '${establishment.hours.isNotEmpty ? ' · ${establishment.hours}' : ''}',
+          ),
+          icon: markerColor,
+        ),
+      );
+    }
+
+    setState(() {
+      _markers = newMarkers;
+    });
+  }
+
+  void _filterEstablishments(String type) {
+    setState(() {
+      _filterType = type;
+    });
+    _fetchAndUpdateMarkers();
+  }
+
+  List<Location> _filteredEstablishments(EstablishmentsProvider est) {
+    switch (_filterType) {
+      case 'pharmacy':
+        return est.pharmacies;
+      case 'hospital':
+        return est.hospitals;
+      case 'clinic':
+        return est.clinics;
+      default:
+        return est.establishments;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final filteredLocations = _filterType == 'all'
-        ? locations
-        : locations.where((loc) => loc['type'] == _filterType).toList();
-
     return Scaffold(
-      backgroundColor: const Color(0xFFffffff),
-      body: CustomScrollView(
-        slivers: [
-          // Header personalizado
-          SliverAppBar(
-            floating: false,
-            pinned: true,
-            backgroundColor: const Color(0xFF1A56DB),
-            elevation: 0,
-            expandedHeight: 200,
-            flexibleSpace: FlexibleSpaceBar(
-              background: Container(
-                color: const Color(0xFF1A56DB),
-                child: Padding(
-                  padding: const EdgeInsets.all(20),
+      body: Consumer2<LocationProvider, EstablishmentsProvider>(
+        builder: (context, locationProvider, establishmentsProvider, child) {
+          final userLat = locationProvider.userLatitude;
+          final userLon = locationProvider.userLongitude;
+
+          if (locationProvider.isLoading) {
+            return const Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CircularProgressIndicator(color: Color(0xFF1A56DB)),
+                  SizedBox(height: 16),
+                  Text(
+                    'Buscando tu ubicación...',
+                    style: TextStyle(color: Colors.grey),
+                  ),
+                ],
+              ),
+            );
+          }
+
+          if (userLat == 0 && userLon == 0) {
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.location_off, size: 64, color: Colors.grey),
+                    const SizedBox(height: 16),
+                    Text(
+                      locationProvider.errorMessage ??
+                          'No pudimos obtener tu ubicación.',
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(color: Colors.grey, fontSize: 16),
+                    ),
+                    const SizedBox(height: 24),
+                    ElevatedButton.icon(
+                      onPressed: () => locationProvider.getUserLocation(),
+                      icon: const Icon(Icons.refresh, color: Colors.white),
+                      label: const Text(
+                        'Reintentar',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF1A56DB),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }
+
+          final establishments = _filteredEstablishments(establishmentsProvider);
+
+          return Stack(
+            children: [
+              GoogleMap(
+                onMapCreated: _onMapCreated,
+                initialCameraPosition: CameraPosition(
+                  target: LatLng(userLat, userLon),
+                  zoom: 14,
+                ),
+                markers: _markers,
+                myLocationEnabled: true,
+                myLocationButtonEnabled: true,
+                zoomControlsEnabled: true,
+                mapType: MapType.normal,
+              ),
+
+              // Header flotante
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                child: SafeArea(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.15),
+                            blurRadius: 12,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'Mapa Interactivo',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFF030213),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    DateFormat(
+                                      'd \'de\' MMMM',
+                                      'es_ES',
+                                    ).format(DateTime.now()),
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      color: Color(0xFF717182),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              Container(
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF1A56DB),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                padding: const EdgeInsets.all(8),
+                                child: const Icon(
+                                  Icons.location_on,
+                                  color: Colors.white,
+                                  size: 24,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+                          SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: Row(
+                              children: [
+                                _buildFilterChip('Todos', 'all'),
+                                const SizedBox(width: 8),
+                                _buildFilterChip('Farmacias', 'pharmacy'),
+                                const SizedBox(width: 8),
+                                _buildFilterChip('Hospitales', 'hospital'),
+                                const SizedBox(width: 8),
+                                _buildFilterChip('Clínicas', 'clinic'),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+
+              // Panel inferior
+              Positioned(
+                bottom: 0,
+                left: 0,
+                right: 0,
+                child: Container(
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(24),
+                      topRight: Radius.circular(24),
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black12,
+                        blurRadius: 16,
+                        offset: Offset(0, -4),
+                      ),
+                    ],
+                  ),
                   child: Column(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Text(
-                        'Farmacias y Centros',
-                        style: TextStyle(
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                      Padding(
+                        padding: const EdgeInsets.only(top: 12),
+                        child: Container(
+                          width: 40,
+                          height: 4,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFE0E0E0),
+                            borderRadius: BorderRadius.circular(2),
+                          ),
                         ),
                       ),
-                      const SizedBox(height: 8),
-                      Text(
-                        DateFormat('EEEE, d \'de\' MMMM yyyy', 'es_ES')
-                            .format(DateTime.now()),
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: Colors.white70,
+                      Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              establishmentsProvider.isLoading
+                                  ? 'Buscando...'
+                                  : 'Cerca de ti (${establishments.length})',
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF030213),
+                              ),
+                            ),
+                            Container(
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF1A56DB).withValues(
+                                  alpha: 0.1,
+                                ),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 6,
+                              ),
+                              child: const Row(
+                                children: [
+                                  Icon(
+                                    Icons.info_outline,
+                                    size: 14,
+                                    color: Color(0xFF1A56DB),
+                                  ),
+                                  SizedBox(width: 4),
+                                  Text(
+                                    'Toca un marcador',
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      color: Color(0xFF1A56DB),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
                       ),
+                      SizedBox(
+                        height: 180,
+                        child: establishmentsProvider.isLoading
+                            ? const Center(
+                                child: CircularProgressIndicator(
+                                  color: Color(0xFF1A56DB),
+                                ),
+                              )
+                            : establishmentsProvider.errorMessage != null
+                                ? Center(
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Icon(
+                                          Icons.wifi_off,
+                                          color: Colors.grey[400],
+                                          size: 40,
+                                        ),
+                                        const SizedBox(height: 8),
+                                        Text(
+                                          establishmentsProvider.errorMessage!,
+                                          style: TextStyle(
+                                            color: Colors.grey[600],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  )
+                                : establishments.isEmpty
+                                    ? Center(
+                                        child: Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            Icon(
+                                              Icons.location_off,
+                                              color: Colors.grey[400],
+                                              size: 40,
+                                            ),
+                                            const SizedBox(height: 8),
+                                            Text(
+                                              'No hay establecimientos cercanos',
+                                              style: TextStyle(
+                                                color: Colors.grey[600],
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      )
+                                    : ListView.builder(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 16,
+                                        ),
+                                        itemCount: establishments.length,
+                                        itemBuilder: (context, index) {
+                                          return _buildEstablishmentItem(
+                                            establishments[index],
+                                          );
+                                        },
+                                      ),
+                      ),
+                      const SizedBox(height: 16),
                     ],
                   ),
                 ),
               ),
-            ),
-          ),
-
-          // Contenido principal
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Filtros
-                  const Text(
-                    'Filtrar por tipo',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF1A1A1A),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      children: [
-                        _buildFilterButton('Todos', 'all'),
-                        const SizedBox(width: 8),
-                        _buildFilterButton('Farmacias', 'pharmacy'),
-                        const SizedBox(width: 8),
-                        _buildFilterButton('Hospitales', 'hospital'),
-                        const SizedBox(width: 8),
-                        _buildFilterButton('Clínicas', 'clinic'),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-
-                  // Lista de ubicaciones
-                  const Text(
-                    'Ubicaciones cercanas',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF1A1A1A),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  ...filteredLocations.map((entry) {
-                    final location = entry;
-                    return Column(
-                      children: [
-                        _buildLocationCard(location),
-                        const SizedBox(height: 12),
-                      ],
-                    );
-                  }),
-                  const SizedBox(height: 20),
-                ],
-              ),
-            ),
-          ),
-        ],
+            ],
+          );
+        },
       ),
     );
   }
 
-  Widget _buildFilterButton(String label, String type) {
+  Widget _buildFilterChip(String label, String type) {
     final isSelected = _filterType == type;
     return GestureDetector(
-      onTap: () {
-        setState(() {
-          _filterType = type;
-        });
-      },
+      onTap: () => _filterEstablishments(type),
       child: Container(
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF1A56DB) : const Color(0xFFf3f3f5),
+          color: isSelected ? const Color(0xFF1A56DB) : Colors.white,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isSelected ? const Color(0xFF1A56DB) : Colors.transparent,
+            color: isSelected
+                ? const Color(0xFF1A56DB)
+                : const Color(0xFFE0E0E0),
           ),
         ),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         child: Text(
           label,
           style: TextStyle(
@@ -192,192 +456,88 @@ class _MapScreenState extends State<MapScreen> {
     );
   }
 
-  Widget _buildLocationCard(Map<String, dynamic> location) {
+  Widget _buildEstablishmentItem(Location establishment) {
+    IconData iconData;
+    Color iconColor;
+
+    if (establishment.type == 'pharmacy') {
+      iconData = Icons.local_pharmacy;
+      iconColor = Colors.green;
+    } else if (establishment.type == 'hospital') {
+      iconData = Icons.local_hospital;
+      iconColor = Colors.red;
+    } else {
+      iconData = Icons.medical_services;
+      iconColor = Colors.orange;
+    }
+
     return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 8,
-          ),
-        ],
+        color: const Color(0xFFF5F7FA),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: const Color(0xFFE0E0E0)),
       ),
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
         children: [
-          // Encabezado con icono y nombre
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                decoration: BoxDecoration(
-                  color: const Color(0xFF1A56DB),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                padding: const EdgeInsets.all(10),
-                child: Icon(
-                  location['icon'] as IconData,
-                  color: Colors.white,
-                  size: 24,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      location['name'],
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF1A1A1A),
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Container(
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFf3f3f5),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 2,
-                      ),
-                      child: Text(
-                        _getLocationTypeLabel(location['type']),
-                        style: const TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFF030213),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Text(
-                location['distance'],
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF1A56DB),
-                ),
-              ),
-            ],
+          Container(
+            decoration: BoxDecoration(
+              color: iconColor.withValues(alpha: 0.2),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            padding: const EdgeInsets.all(8),
+            child: Icon(iconData, color: iconColor, size: 20),
           ),
-          const SizedBox(height: 12),
-
-          // Información detallada
-          _buildInfoRow(Icons.location_on_outlined, location['address']),
-          const SizedBox(height: 8),
-          _buildInfoRow(Icons.phone_outlined, location['phone']),
-          const SizedBox(height: 8),
-          _buildInfoRow(Icons.access_time_outlined, location['hours']),
-          const SizedBox(height: 12),
-
-          // Botones de acción
-          Row(
-            children: [
-              Expanded(
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF1A56DB),
-                    padding: const EdgeInsets.symmetric(vertical: 10),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          'Abriendo mapa para ${location['name']}',
-                        ),
-                      ),
-                    );
-                  },
-                  child: const Text(
-                    'Ver en mapa',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                    ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  establishment.name,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF030213),
                   ),
                 ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: OutlinedButton(
-                  style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: Color(0xFF1A56DB)),
-                    padding: const EdgeInsets.symmetric(vertical: 10),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          'Llamando a ${location['phone']}',
-                        ),
-                      ),
-                    );
-                  },
-                  child: const Text(
-                    'Llamar',
-                    style: TextStyle(
-                      color: Color(0xFF1A56DB),
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
+                const SizedBox(height: 2),
+                Text(
+                  establishment.address.isNotEmpty
+                      ? establishment.address
+                      : '${establishment.distance.toStringAsFixed(1)} km',
+                  style: const TextStyle(fontSize: 11, color: Color(0xFF717182)),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildInfoRow(IconData icon, String text) {
-    return Row(
-      children: [
-        Icon(
-          icon,
-          size: 16,
-          color: Color(0xFF717182),
-        ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: Text(
-            text,
-            style: const TextStyle(
-              fontSize: 12,
-              color: Color(0xFF717182),
+                if (establishment.hours.isNotEmpty) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    establishment.hours,
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: establishment.hours == 'Abierto ahora'
+                          ? Colors.green
+                          : Colors.red,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ],
             ),
           ),
-        ),
-      ],
+          const SizedBox(width: 8),
+          Text(
+            '${establishment.distance.toStringAsFixed(1)} km',
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF1A56DB),
+            ),
+          ),
+        ],
+      ),
     );
-  }
-
-  String _getLocationTypeLabel(String type) {
-    switch (type) {
-      case 'pharmacy':
-        return 'Farmacia';
-      case 'hospital':
-        return 'Hospital';
-      case 'clinic':
-        return 'Clínica';
-      default:
-        return 'Ubicación';
-    }
   }
 }
