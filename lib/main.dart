@@ -1,19 +1,35 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 // Importaciones de tus archivos (Asegúrate que las rutas sean correctas)
 import 'providers/medication_provider.dart';
+import 'providers/auth_provider.dart';
+import 'providers/user_provider.dart';
 import 'screens/main_nav_screen.dart';
+import 'screens/login_screen.dart';
 
-void main() {
+void main() async {
   // Aseguramos que los bindings de Flutter estén listos
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Inicializamos el formateo de fechas en español
+  await initializeDateFormatting('es', null);
   
   runApp(
     // El MultiProvider envuelve toda la app para que los datos fluyan
     MultiProvider(
       providers: [
+        ChangeNotifierProvider(create: (_) => UserProvider()),
+        ChangeNotifierProvider(
+          create: (context) {
+            final userProvider = context.read<UserProvider>();
+            final authProvider = AuthProvider();
+            authProvider.setUserProvider(userProvider);
+            return authProvider;
+          },
+        ),
         ChangeNotifierProvider(create: (_) => MedicationProvider()),
       ],
       child: const CuidApp(),
@@ -91,8 +107,12 @@ class CuidApp extends StatelessWidget {
         ),
       ),
 
-      // El punto de entrada es el esqueleto con la barra de navegación
-      home: const MainNavScreen(),
+      // El punto de entrada decide basado en el estado de autenticación
+      home: Consumer<AuthProvider>(
+        builder: (context, authProvider, _) {
+          return authProvider.isLoggedIn ? const MainNavScreen() : const LoginScreen();
+        },
+      ),
     );
   }
 }

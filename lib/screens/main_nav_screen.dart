@@ -3,6 +3,8 @@ import 'home_screen.dart';
 import 'medications_screen.dart';
 import 'controls_screen.dart';
 import 'profile_screen.dart';
+import 'map_screen.dart';
+import 'scanner_screen.dart';
 
 class MainNavScreen extends StatefulWidget {
   const MainNavScreen({super.key});
@@ -18,8 +20,8 @@ class _MainNavScreenState extends State<MainNavScreen> {
     const HomeScreen(),
     const MedicationsScreen(),
     const ControlsScreen(),
-    const Center(child: Text('Próximamente: Mapa')),
-    const Center(child: Text('Próximamente: Escáner')),
+    const MapScreen(),
+    const ScannerScreen(),
     const ProfileScreen(),
   ];
 
