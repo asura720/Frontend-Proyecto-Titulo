@@ -17,13 +17,19 @@ class HomeScreen extends StatelessWidget {
             floating: false,
             pinned: true,
             backgroundColor: const Color(0xFF1A56DB),
-            elevation: 0,
-            expandedHeight: 200,
+            elevation: 8,
+            expandedHeight: 220,
             flexibleSpace: FlexibleSpaceBar(
               background: Container(
-                color: const Color(0xFF1A56DB),
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [Color(0xFF1A56DB), Color(0xFF1E40AF)],
+                  ),
+                ),
                 child: Padding(
-                  padding: const EdgeInsets.all(20),
+                  padding: const EdgeInsets.fromLTRB(24, 40, 24, 24),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.end,
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -31,17 +37,19 @@ class HomeScreen extends StatelessWidget {
                       const Text(
                         'CuidApp',
                         style: TextStyle(
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
+                          fontSize: 32,
+                          fontWeight: FontWeight.w800,
                           color: Colors.white,
+                          letterSpacing: 0.5,
                         ),
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: 8),
                       const Text(
                         'Tu salud en tus manos',
                         style: TextStyle(
-                          fontSize: 14,
+                          fontSize: 15,
                           color: Colors.white70,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                     ],
@@ -53,7 +61,7 @@ class HomeScreen extends StatelessWidget {
           // Contenido principal
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
               child: Consumer<MedicationProvider>(
                 builder: (context, medProvider, _) {
                   final medications = medProvider.medications;
@@ -84,7 +92,10 @@ class HomeScreen extends StatelessWidget {
                               ],
                             ),
                             Text(
-                              DateFormat('EEEE, d \'de\' MMMM yyyy', 'es_ES').format(DateTime.now()),
+                              DateFormat(
+                                'EEEE, d \'de\' MMMM yyyy',
+                                'es_ES',
+                              ).format(DateTime.now()),
                               style: const TextStyle(
                                 fontSize: 12,
                                 color: Colors.grey,
@@ -158,7 +169,10 @@ class HomeScreen extends StatelessWidget {
                         children: [
                           const Row(
                             children: [
-                              Icon(Icons.medical_services_outlined, color: Color(0xFF030213)),
+                              Icon(
+                                Icons.medical_services_outlined,
+                                color: Color(0xFF030213),
+                              ),
                               SizedBox(width: 8),
                               Text(
                                 'Medicamentos de hoy',
@@ -180,88 +194,96 @@ class HomeScreen extends StatelessWidget {
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Column(
-                          children: List.generate(
-                            medications.length,
-                            (index) {
-                              final med = medications[index];
-                              final isTakenToday = medProvider.isTakenToday(med.id);
-                              return Column(
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsets.all(12),
-                                    child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Row(
-                                          children: [
-                                            Container(
-                                              width: 40,
-                                              height: 40,
-                                              decoration: BoxDecoration(
-                                                color: med.containerColor,
-                                                borderRadius: BorderRadius.circular(8),
-                                              ),
-                                              child: Icon(
-                                                Icons.medication,
-                                                color: med.iconColor,
-                                                size: 20,
-                                              ),
-                                            ),
-                                            const SizedBox(width: 12),
-                                            Column(
-                                              crossAxisAlignment: CrossAxisAlignment.start,
-                                              children: [
-                                                Text(
-                                                  med.name,
-                                                  style: const TextStyle(
-                                                    fontSize: 14,
-                                                    fontWeight: FontWeight.bold,
-                                                  ),
-                                                ),
-                                                Text(
-                                                  med.times.first,
-                                                  style: const TextStyle(
-                                                    fontSize: 12,
-                                                    color: Colors.grey,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ],
-                                        ),
-                                        GestureDetector(
-                                          onTap: () {
-                                            medProvider.toggleMedicationTaken(med.id);
-                                          },
-                                          child: Container(
-                                            width: 24,
-                                            height: 24,
+                          children: List.generate(medications.length, (index) {
+                            final med = medications[index];
+                            final isTakenToday = medProvider.isTakenToday(
+                              med.id,
+                            );
+                            return Column(
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.all(12),
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Container(
+                                            width: 40,
+                                            height: 40,
                                             decoration: BoxDecoration(
-                                              shape: BoxShape.circle,
-                                              border: Border.all(
-                                                color: isTakenToday ? Colors.green : Colors.grey[300]!,
-                                                width: 2,
-                                              ),
-                                              color: isTakenToday ? Colors.green : Colors.transparent,
+                                              color: med.containerColor,
+                                              borderRadius:
+                                                  BorderRadius.circular(8),
                                             ),
-                                            child: isTakenToday
-                                                ? const Icon(
-                                                    Icons.check,
-                                                    color: Colors.white,
-                                                    size: 14,
-                                                  )
-                                                : null,
+                                            child: Icon(
+                                              Icons.medication,
+                                              color: med.iconColor,
+                                              size: 20,
+                                            ),
                                           ),
+                                          const SizedBox(width: 12),
+                                          Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                med.name,
+                                                style: const TextStyle(
+                                                  fontSize: 14,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                              Text(
+                                                med.times.first,
+                                                style: const TextStyle(
+                                                  fontSize: 12,
+                                                  color: Colors.grey,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                      GestureDetector(
+                                        onTap: () {
+                                          medProvider.toggleMedicationTaken(
+                                            med.id,
+                                          );
+                                        },
+                                        child: Container(
+                                          width: 24,
+                                          height: 24,
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            border: Border.all(
+                                              color: isTakenToday
+                                                  ? Colors.green
+                                                  : Colors.grey[300]!,
+                                              width: 2,
+                                            ),
+                                            color: isTakenToday
+                                                ? Colors.green
+                                                : Colors.transparent,
+                                          ),
+                                          child: isTakenToday
+                                              ? const Icon(
+                                                  Icons.check,
+                                                  color: Colors.white,
+                                                  size: 14,
+                                                )
+                                              : null,
                                         ),
-                                      ],
-                                    ),
+                                      ),
+                                    ],
                                   ),
-                                  if (index < medications.length - 1)
-                                    Divider(height: 1, color: Colors.grey[200]),
-                                ],
-                              );
-                            },
-                          ),
+                                ),
+                                if (index < medications.length - 1)
+                                  Divider(height: 1, color: Colors.grey[200]),
+                              ],
+                            );
+                          }),
                         ),
                       ),
                       const SizedBox(height: 24),
@@ -271,7 +293,10 @@ class HomeScreen extends StatelessWidget {
                         children: [
                           const Row(
                             children: [
-                              Icon(Icons.calendar_today_outlined, color: Color(0xFF030213)),
+                              Icon(
+                                Icons.calendar_today_outlined,
+                                color: Color(0xFF030213),
+                              ),
                               SizedBox(width: 8),
                               Text(
                                 'Próximos controles',
@@ -316,9 +341,7 @@ class HomeScreen extends StatelessWidget {
                         decoration: BoxDecoration(
                           color: const Color(0xFFe9ebef),
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: const Color(0xFFececf0),
-                          ),
+                          border: Border.all(color: const Color(0xFFececf0)),
                         ),
                         padding: const EdgeInsets.all(16),
                         child: Row(
@@ -438,17 +461,11 @@ class _ControlCard extends StatelessWidget {
         children: [
           Text(
             doctorName,
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-            ),
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
           ),
           Text(
             specialty,
-            style: const TextStyle(
-              fontSize: 12,
-              color: Colors.grey,
-            ),
+            style: const TextStyle(fontSize: 12, color: Colors.grey),
           ),
           const SizedBox(height: 8),
           Row(

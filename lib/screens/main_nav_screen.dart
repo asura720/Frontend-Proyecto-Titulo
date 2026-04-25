@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'home_screen.dart'; 
+import 'home_screen.dart';
 import 'medications_screen.dart';
 import 'controls_screen.dart';
 import 'profile_screen.dart';
@@ -38,16 +38,44 @@ class _MainNavScreenState extends State<MainNavScreen> {
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         selectedItemColor: const Color(0xFF1A56DB),
-        unselectedItemColor: Colors.grey,
+        unselectedItemColor: Colors.grey[400],
+        backgroundColor: Colors.white,
+        elevation: 12,
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
+        selectedLabelStyle: const TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
+        ),
+        unselectedLabelStyle: const TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w500,
+        ),
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home_outlined), label: 'Inicio'),
-          BottomNavigationBarItem(icon: Icon(Icons.medication_outlined), label: 'Medicinas'),
-          BottomNavigationBarItem(icon: Icon(Icons.assignment_outlined), label: 'Controles'),
-          BottomNavigationBarItem(icon: Icon(Icons.location_on_outlined), label: 'Mapa'),
-          BottomNavigationBarItem(icon: Icon(Icons.camera_alt_outlined), label: 'Escáner'),
-          BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: 'Perfil'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home_outlined),
+            label: 'Inicio',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.medication_outlined),
+            label: 'Medicinas',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.assignment_outlined),
+            label: 'Controles',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.location_on_outlined),
+            label: 'Mapa',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.camera_alt_outlined),
+            label: 'Escáner',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person_outline),
+            label: 'Perfil',
+          ),
         ],
       ),
     );

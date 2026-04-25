@@ -190,50 +190,40 @@ class _LoginScreenState extends State<LoginScreen> {
                     children: [
                       // Título
                       Text(
-                        _isLogin ? 'Iniciar Sesión' : 'Crear Cuenta',
+                        _isLogin ? 'Bienvenido' : 'Crear Cuenta',
                         style: const TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFF030213),
+                          color: Color(0xFF1A1A1A),
                         ),
                       ),
-                      const SizedBox(height: 28),
+                      const SizedBox(height: 8),
+                      Text(
+                        _isLogin
+                            ? 'Inicia sesión para continuar'
+                            : 'Completa los datos para registrarte',
+                        style: const TextStyle(
+                          fontSize: 13,
+                          color: Colors.grey,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
 
                       // Campo Nombre (solo registro)
                       if (!_isLogin) ...[
-                        const Text(
-                          'Nombre Completo',
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            color: Color(0xFF030213),
-                          ),
-                        ),
-                        const SizedBox(height: 8),
                         TextField(
                           controller: _nameController,
                           decoration: InputDecoration(
-                            hintText: 'Juan García López',
+                            labelText: 'Nombre Completo',
+                            prefixIcon: const Icon(
+                              Icons.person_outline,
+                              color: Color(0xFF1A56DB),
+                            ),
                             filled: true,
-                            fillColor: const Color(0xFFF5F7FA),
+                            fillColor: const Color(0xFFF5F7FB),
                             border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                              borderSide: const BorderSide(
-                                color: Color(0xFFE0E0E0),
-                              ),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                              borderSide: const BorderSide(
-                                color: Color(0xFFE0E0E0),
-                              ),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                              borderSide: const BorderSide(
-                                color: Color(0xFF1A56DB),
-                                width: 2,
-                              ),
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide.none,
                             ),
                             contentPadding: const EdgeInsets.symmetric(
                               horizontal: 16,
@@ -241,44 +231,24 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ),
                         ),
-                        const SizedBox(height: 20),
+                        const SizedBox(height: 16),
                       ],
 
                       // Email
-                      const Text(
-                        'Correo Electrónico',
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFF030213),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
                       TextField(
                         controller: _emailController,
                         keyboardType: TextInputType.emailAddress,
                         decoration: InputDecoration(
-                          hintText: 'tu@email.com',
+                          labelText: 'Correo Electrónico',
+                          prefixIcon: const Icon(
+                            Icons.mail_outline,
+                            color: Color(0xFF1A56DB),
+                          ),
                           filled: true,
-                          fillColor: const Color(0xFFF5F7FA),
+                          fillColor: const Color(0xFFF5F7FB),
                           border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide: const BorderSide(
-                              color: Color(0xFFE0E0E0),
-                            ),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide: const BorderSide(
-                              color: Color(0xFFE0E0E0),
-                            ),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide: const BorderSide(
-                              color: Color(0xFF1A56DB),
-                              width: 2,
-                            ),
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
                           ),
                           contentPadding: const EdgeInsets.symmetric(
                             horizontal: 16,
@@ -286,31 +256,24 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ),
                       ),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 16),
 
                       // Password
-                      const Text(
-                        'Contraseña',
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFF030213),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
                       TextField(
                         controller: _passwordController,
                         obscureText: _obscurePassword,
                         decoration: InputDecoration(
-                          hintText: '••••••••',
-                          filled: true,
-                          fillColor: const Color(0xFFF5F7FA),
+                          labelText: 'Contraseña',
+                          prefixIcon: const Icon(
+                            Icons.lock_outline,
+                            color: Color(0xFF1A56DB),
+                          ),
                           suffixIcon: IconButton(
                             icon: Icon(
                               _obscurePassword
                                   ? Icons.visibility_outlined
                                   : Icons.visibility_off_outlined,
-                              color: const Color(0xFF717182),
+                              color: const Color(0xFF1A56DB),
                             ),
                             onPressed: () {
                               setState(() {
@@ -318,24 +281,11 @@ class _LoginScreenState extends State<LoginScreen> {
                               });
                             },
                           ),
+                          filled: true,
+                          fillColor: const Color(0xFFF5F7FB),
                           border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide: const BorderSide(
-                              color: Color(0xFFE0E0E0),
-                            ),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide: const BorderSide(
-                              color: Color(0xFFE0E0E0),
-                            ),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide: const BorderSide(
-                              color: Color(0xFF1A56DB),
-                              width: 2,
-                            ),
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
                           ),
                           contentPadding: const EdgeInsets.symmetric(
                             horizontal: 16,
@@ -343,32 +293,25 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ),
                       ),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 16),
 
                       // Confirmar Password (solo registro)
                       if (!_isLogin) ...[
-                        const Text(
-                          'Confirmar Contraseña',
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            color: Color(0xFF030213),
-                          ),
-                        ),
-                        const SizedBox(height: 8),
                         TextField(
                           controller: _confirmPasswordController,
                           obscureText: _obscureConfirmPassword,
                           decoration: InputDecoration(
-                            hintText: '••••••••',
-                            filled: true,
-                            fillColor: const Color(0xFFF5F7FA),
+                            labelText: 'Confirmar Contraseña',
+                            prefixIcon: const Icon(
+                              Icons.lock_outline,
+                              color: Color(0xFF1A56DB),
+                            ),
                             suffixIcon: IconButton(
                               icon: Icon(
                                 _obscureConfirmPassword
                                     ? Icons.visibility_outlined
                                     : Icons.visibility_off_outlined,
-                                color: const Color(0xFF717182),
+                                color: const Color(0xFF1A56DB),
                               ),
                               onPressed: () {
                                 setState(() {
@@ -377,24 +320,11 @@ class _LoginScreenState extends State<LoginScreen> {
                                 });
                               },
                             ),
+                            filled: true,
+                            fillColor: const Color(0xFFF5F7FB),
                             border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                              borderSide: const BorderSide(
-                                color: Color(0xFFE0E0E0),
-                              ),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                              borderSide: const BorderSide(
-                                color: Color(0xFFE0E0E0),
-                              ),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                              borderSide: const BorderSide(
-                                color: Color(0xFF1A56DB),
-                                width: 2,
-                              ),
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide.none,
                             ),
                             contentPadding: const EdgeInsets.symmetric(
                               horizontal: 16,
@@ -402,7 +332,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ),
                         ),
-                        const SizedBox(height: 20),
+                        const SizedBox(height: 16),
                       ] else ...[
                         // Recuérdame + ¿Olvidaste? (solo login)
                         Row(
@@ -422,8 +352,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                 const Text(
                                   'Recuérdame',
                                   style: TextStyle(
-                                    fontSize: 13,
-                                    color: Color(0xFF030213),
+                                    fontSize: 12,
+                                    color: Color(0xFF1A1A1A),
                                   ),
                                 ),
                               ],
@@ -435,11 +365,12 @@ class _LoginScreenState extends State<LoginScreen> {
                                     content: Text(
                                       '¿Olvidaste tu contraseña? - Próximamente',
                                     ),
+                                    behavior: SnackBarBehavior.floating,
                                   ),
                                 );
                               },
                               child: const Text(
-                                '¿Olvidaste tu contraseña?',
+                                '¿Olvidaste?',
                                 style: TextStyle(
                                   fontSize: 12,
                                   color: Color(0xFF1A56DB),
@@ -449,7 +380,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ],
                         ),
-                        const SizedBox(height: 20),
+                        const SizedBox(height: 16),
                       ],
 
                       // Mensaje de error
@@ -458,8 +389,11 @@ class _LoginScreenState extends State<LoginScreen> {
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
                             color: const Color(0xFFFFEBEE),
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: const Color(0xFFFFCDD2)),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(
+                              color: const Color(0xFFFFCDD2),
+                              width: 1,
+                            ),
                           ),
                           child: Row(
                             children: [
@@ -494,10 +428,11 @@ class _LoginScreenState extends State<LoginScreen> {
                             disabledBackgroundColor: const Color(
                               0xFF1A56DB,
                             ).withValues(alpha: 0.5),
-                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            padding: const EdgeInsets.symmetric(vertical: 14),
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
+                              borderRadius: BorderRadius.circular(12),
                             ),
+                            elevation: 2,
                           ),
                           child: _isLoading
                               ? const SizedBox(

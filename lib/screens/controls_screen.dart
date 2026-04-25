@@ -28,16 +28,20 @@ class _ControlsScreenState extends State<ControlsScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) => _AddControlModal(
-        onControlAdded: (control) {
-          setState(() {
-            _controls.add(control);
-          });
-          Navigator.pop(context);
-        },
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+        ),
+        child: _AddControlModal(
+          onControlAdded: (control) {
+            setState(() {
+              _controls.add(control);
+            });
+            Navigator.pop(context);
+          },
+        ),
       ),
     );
   }
@@ -80,8 +84,10 @@ class _ControlsScreenState extends State<ControlsScreen> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        DateFormat('d \'de\' MMMM yyyy', 'es_ES')
-                            .format(DateTime.now()),
+                        DateFormat(
+                          'd \'de\' MMMM yyyy',
+                          'es_ES',
+                        ).format(DateTime.now()),
                         style: const TextStyle(
                           fontSize: 12,
                           color: Colors.white70,
@@ -235,18 +241,15 @@ class _ControlsScreenState extends State<ControlsScreen> {
 
           // Lista de controles
           SliverList(
-            delegate: SliverChildBuilderDelegate(
-              (context, index) {
-                final control = _controls[index];
-                return _ControlCard(
-                  doctorName: control['doctorName'],
-                  specialty: control['specialty'],
-                  date: control['date'],
-                  time: control['time'],
-                );
-              },
-              childCount: _controls.length,
-            ),
+            delegate: SliverChildBuilderDelegate((context, index) {
+              final control = _controls[index];
+              return _ControlCard(
+                doctorName: control['doctorName'],
+                specialty: control['specialty'],
+                date: control['date'],
+                time: control['time'],
+              );
+            }, childCount: _controls.length),
           ),
 
           const SliverPadding(padding: EdgeInsets.only(bottom: 20)),
@@ -266,8 +269,8 @@ class _ControlsScreenState extends State<ControlsScreen> {
             color: percentage >= 90
                 ? const Color(0xFF10B981)
                 : percentage >= 70
-                    ? const Color(0xFFF59E0B)
-                    : const Color(0xFFEF4444),
+                ? const Color(0xFFF59E0B)
+                : const Color(0xFFEF4444),
             borderRadius: BorderRadius.circular(4),
           ),
         ),
@@ -407,13 +410,14 @@ class _ControlCard extends StatelessWidget {
             // Botón de acción
             SizedBox(
               width: double.infinity,
-              child: ElevatedButton(
+              child: ElevatedButton.icon(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF1A56DB),
-                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(12),
                   ),
+                  elevation: 2,
                 ),
                 onPressed: () {
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -422,15 +426,15 @@ class _ControlCard extends StatelessWidget {
                         'Control con $doctorName el ${DateFormat('d \'de\' MMM', 'es_ES').format(date)} a las ${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}',
                       ),
                       duration: const Duration(seconds: 2),
+                      behavior: SnackBarBehavior.floating,
+                      backgroundColor: const Color(0xFF1A56DB),
                     ),
                   );
                 },
-                child: const Text(
+                icon: const Icon(Icons.notifications_outlined, size: 18),
+                label: const Text(
                   'Recordar',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
                 ),
               ),
             ),
@@ -444,9 +448,7 @@ class _ControlCard extends StatelessWidget {
 class _AddControlModal extends StatefulWidget {
   final Function(Map<String, dynamic>) onControlAdded;
 
-  const _AddControlModal({
-    required this.onControlAdded,
-  });
+  const _AddControlModal({required this.onControlAdded});
 
   @override
   State<_AddControlModal> createState() => _AddControlModalState();
@@ -515,10 +517,10 @@ class _AddControlModalState extends State<_AddControlModal> {
   Widget build(BuildContext context) {
     return Container(
       padding: EdgeInsets.only(
-        left: 16,
-        right: 16,
-        top: 16,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+        left: 20,
+        right: 20,
+        top: 24,
+        bottom: MediaQuery.of(context).viewInsets.bottom + 24,
       ),
       child: SingleChildScrollView(
         child: Column(
@@ -531,7 +533,7 @@ class _AddControlModalState extends State<_AddControlModal> {
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFE0E0E0),
+                  color: Colors.grey[300],
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -542,103 +544,104 @@ class _AddControlModalState extends State<_AddControlModal> {
             const Text(
               'Nuevo Control Médico',
               style: TextStyle(
-                fontSize: 18,
+                fontSize: 22,
                 fontWeight: FontWeight.bold,
-                color: Color(0xFF030213),
+                color: Color(0xFF1A1A1A),
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 24),
 
             // Doctor Name
-            const Text(
-              'Nombre del Doctor',
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF030213),
-              ),
-            ),
-            const SizedBox(height: 8),
             TextField(
               controller: _doctorController,
               decoration: InputDecoration(
-                hintText: 'Ej: Dr. Juan Pérez',
-                hintStyle: const TextStyle(color: Color(0xFFCCCCCC)),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
+                labelText: 'Nombre del Doctor',
+                prefixIcon: const Icon(
+                  Icons.person_outline,
+                  color: Color(0xFF1A56DB),
                 ),
+                filled: true,
+                fillColor: const Color(0xFFF5F7FB),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+                labelStyle: const TextStyle(color: Colors.grey),
                 contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 12,
+                  vertical: 14,
+                  horizontal: 16,
                 ),
               ),
             ),
             const SizedBox(height: 16),
 
             // Specialty
-            const Text(
-              'Especialidad',
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF030213),
-              ),
-            ),
-            const SizedBox(height: 8),
             TextField(
               controller: _specialtyController,
               decoration: InputDecoration(
-                hintText: 'Ej: Cardiología',
-                hintStyle: const TextStyle(color: Color(0xFFCCCCCC)),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
+                labelText: 'Especialidad',
+                prefixIcon: const Icon(
+                  Icons.medical_services_outlined,
+                  color: Color(0xFF1A56DB),
                 ),
+                filled: true,
+                fillColor: const Color(0xFFF5F7FB),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+                labelStyle: const TextStyle(color: Colors.grey),
                 contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 12,
+                  vertical: 14,
+                  horizontal: 16,
                 ),
               ),
             ),
             const SizedBox(height: 16),
 
             // Date Picker
-            const Text(
-              'Fecha del Control',
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF030213),
-              ),
-            ),
-            const SizedBox(height: 8),
             GestureDetector(
               onTap: _selectDate,
               child: Container(
                 decoration: BoxDecoration(
-                  border: Border.all(color: const Color(0xFFE0E0E0)),
-                  borderRadius: BorderRadius.circular(8),
+                  color: const Color(0xFFF5F7FB),
+                  border: Border.all(color: Colors.transparent),
+                  borderRadius: BorderRadius.circular(12),
                 ),
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 12,
+                  horizontal: 16,
+                  vertical: 14,
                 ),
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      DateFormat('d \'de\' MMM, yyyy', 'es_ES')
-                          .format(_selectedDate),
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: Color(0xFF030213),
-                      ),
-                    ),
                     const Icon(
-                      Icons.calendar_today,
+                      Icons.calendar_today_outlined,
                       color: Color(0xFF1A56DB),
                       size: 20,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Fecha del Control',
+                            style: TextStyle(fontSize: 11, color: Colors.grey),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            DateFormat(
+                              'd \'de\' MMMM, yyyy',
+                              'es_ES',
+                            ).format(_selectedDate),
+                            style: const TextStyle(
+                              fontSize: 14,
+                              color: Color(0xFF1A1A1A),
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
@@ -647,46 +650,51 @@ class _AddControlModalState extends State<_AddControlModal> {
             const SizedBox(height: 16),
 
             // Time Picker
-            const Text(
-              'Hora del Control',
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF030213),
-              ),
-            ),
-            const SizedBox(height: 8),
             GestureDetector(
               onTap: _selectTime,
               child: Container(
                 decoration: BoxDecoration(
-                  border: Border.all(color: const Color(0xFFE0E0E0)),
-                  borderRadius: BorderRadius.circular(8),
+                  color: const Color(0xFFF5F7FB),
+                  border: Border.all(color: Colors.transparent),
+                  borderRadius: BorderRadius.circular(12),
                 ),
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 12,
+                  horizontal: 16,
+                  vertical: 14,
                 ),
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      '${_selectedTime.hour.toString().padLeft(2, '0')}:${_selectedTime.minute.toString().padLeft(2, '0')}',
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: Color(0xFF030213),
-                      ),
-                    ),
                     const Icon(
-                      Icons.access_time,
+                      Icons.access_time_outlined,
                       color: Color(0xFF1A56DB),
                       size: 20,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Hora del Control',
+                            style: TextStyle(fontSize: 11, color: Colors.grey),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            '${_selectedTime.hour.toString().padLeft(2, '0')}:${_selectedTime.minute.toString().padLeft(2, '0')}',
+                            style: const TextStyle(
+                              fontSize: 14,
+                              color: Color(0xFF1A1A1A),
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 28),
 
             // Botones
             Row(
@@ -695,9 +703,12 @@ class _AddControlModalState extends State<_AddControlModal> {
                   child: OutlinedButton(
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 12),
-                      side: const BorderSide(color: Color(0xFFE0E0E0)),
+                      side: const BorderSide(
+                        color: Color(0xFFE0E0E0),
+                        width: 1.5,
+                      ),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(12),
                       ),
                     ),
                     onPressed: () => Navigator.pop(context),
@@ -706,7 +717,7 @@ class _AddControlModalState extends State<_AddControlModal> {
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
-                        color: Color(0xFF717182),
+                        color: Colors.grey,
                       ),
                     ),
                   ),
@@ -718,8 +729,9 @@ class _AddControlModalState extends State<_AddControlModal> {
                       backgroundColor: const Color(0xFF1A56DB),
                       padding: const EdgeInsets.symmetric(vertical: 12),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(12),
                       ),
+                      elevation: 2,
                     ),
                     onPressed: _addControl,
                     child: const Text(

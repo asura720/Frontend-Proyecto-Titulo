@@ -8,87 +8,168 @@ class MedicationsScreen extends StatelessWidget {
 
   void _showForm(BuildContext context, [Medication? medication]) {
     final nameController = TextEditingController(text: medication?.name ?? '');
-    final dosageController = TextEditingController(text: medication?.dosage ?? '');
-    final frequencyController = TextEditingController(text: medication?.frequency ?? '1 vez al día');
-    
+    final dosageController = TextEditingController(
+      text: medication?.dosage ?? '',
+    );
+    final frequencyController = TextEditingController(
+      text: medication?.frequency ?? '1 vez al día',
+    );
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (_) => Padding(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).viewInsets.bottom,
-          top: 20, left: 20, right: 20
+      backgroundColor: Colors.transparent,
+      builder: (_) => Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              medication == null ? 'Añadir Medicamento' : 'Editar Medicamento', 
-              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)
-            ),
-            const SizedBox(height: 20),
-            TextField(
-              controller: nameController,
-              decoration: InputDecoration(
-                labelText: 'Nombre del medicamento',
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-              ),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: dosageController,
-              decoration: InputDecoration(
-                labelText: 'Dosis (ej: 50mg)',
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-              ),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: frequencyController,
-              decoration: InputDecoration(
-                labelText: 'Frecuencia',
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-              ),
-            ),
-            const SizedBox(height: 20),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF030213),
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        child: Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+            top: 24,
+            left: 20,
+            right: 20,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(2),
                 ),
-                onPressed: () {
-                  final medProvider = Provider.of<MedicationProvider>(context, listen: false);
-                  final newMed = Medication(
-                    id: medication?.id ?? DateTime.now().toString(),
-                    name: nameController.text,
-                    dosage: dosageController.text,
-                    frequency: frequencyController.text,
-                    times: medication?.times ?? ['8:00 AM'],
-                    containerColor: medication?.containerColor ?? const Color(0xFFf3f3f5),
-                    iconColor: medication?.iconColor ?? const Color(0xFF030213),
-                    isTaken: medication?.isTaken ?? false,
-                    takenDateTime: medication?.takenDateTime,
-                  );
-
-                  if (medication == null) {
-                    medProvider.addMedication(newMed);
-                  } else {
-                    medProvider.editMedication(medication.id, newMed);
-                  }
-                  Navigator.pop(context);
-                },
-                child: const Text('Guardar', style: TextStyle(color: Colors.white, fontSize: 16)),
               ),
-            ),
-            const SizedBox(height: 20),
-          ],
+              const SizedBox(height: 20),
+              Text(
+                medication == null
+                    ? 'Añadir Medicamento'
+                    : 'Editar Medicamento',
+                style: const TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF1A1A1A),
+                ),
+              ),
+              const SizedBox(height: 24),
+              TextField(
+                controller: nameController,
+                decoration: InputDecoration(
+                  labelText: 'Nombre del medicamento',
+                  prefixIcon: const Icon(
+                    Icons.medication_outlined,
+                    color: Color(0xFF1A56DB),
+                  ),
+                  filled: true,
+                  fillColor: const Color(0xFFF5F7FB),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
+                  labelStyle: const TextStyle(color: Colors.grey),
+                  contentPadding: const EdgeInsets.symmetric(
+                    vertical: 14,
+                    horizontal: 16,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 14),
+              TextField(
+                controller: dosageController,
+                decoration: InputDecoration(
+                  labelText: 'Dosis (ej: 50mg)',
+                  prefixIcon: const Icon(
+                    Icons.scale_outlined,
+                    color: Color(0xFF1A56DB),
+                  ),
+                  filled: true,
+                  fillColor: const Color(0xFFF5F7FB),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
+                  labelStyle: const TextStyle(color: Colors.grey),
+                  contentPadding: const EdgeInsets.symmetric(
+                    vertical: 14,
+                    horizontal: 16,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 14),
+              TextField(
+                controller: frequencyController,
+                decoration: InputDecoration(
+                  labelText: 'Frecuencia (ej: 1 vez al día)',
+                  prefixIcon: const Icon(
+                    Icons.schedule_outlined,
+                    color: Color(0xFF1A56DB),
+                  ),
+                  filled: true,
+                  fillColor: const Color(0xFFF5F7FB),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
+                  labelStyle: const TextStyle(color: Colors.grey),
+                  contentPadding: const EdgeInsets.symmetric(
+                    vertical: 14,
+                    horizontal: 16,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF1A56DB),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    elevation: 2,
+                  ),
+                  onPressed: () {
+                    final medProvider = Provider.of<MedicationProvider>(
+                      context,
+                      listen: false,
+                    );
+                    final newMed = Medication(
+                      id: medication?.id ?? DateTime.now().toString(),
+                      name: nameController.text,
+                      dosage: dosageController.text,
+                      frequency: frequencyController.text,
+                      times: medication?.times ?? ['8:00 AM'],
+                      containerColor:
+                          medication?.containerColor ?? const Color(0xFFf3f3f5),
+                      iconColor:
+                          medication?.iconColor ?? const Color(0xFF1A56DB),
+                      isTaken: medication?.isTaken ?? false,
+                      takenDateTime: medication?.takenDateTime,
+                    );
+
+                    if (medication == null) {
+                      medProvider.addMedication(newMed);
+                    } else {
+                      medProvider.editMedication(medication.id, newMed);
+                    }
+                    Navigator.pop(context);
+                  },
+                  child: const Text(
+                    'Guardar',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+            ],
+          ),
         ),
       ),
     );
@@ -101,7 +182,7 @@ class MedicationsScreen extends StatelessWidget {
       body: Consumer<MedicationProvider>(
         builder: (context, medProvider, _) {
           final medications = medProvider.medications;
-          
+
           return CustomScrollView(
             slivers: [
               // Header personalizado
@@ -208,9 +289,11 @@ class MedicationsScreen extends StatelessWidget {
                               children: List.generate(
                                 medProvider.weeklyAdherence.length,
                                 (index) {
-                                  final data = medProvider.weeklyAdherence[index];
-                                  final percentage = (data['percentage'] as int) / 100;
-                                  
+                                  final data =
+                                      medProvider.weeklyAdherence[index];
+                                  final percentage =
+                                      (data['percentage'] as int) / 100;
+
                                   return Column(
                                     children: [
                                       Container(
@@ -218,7 +301,9 @@ class MedicationsScreen extends StatelessWidget {
                                         height: 80,
                                         decoration: BoxDecoration(
                                           color: Colors.grey[100],
-                                          borderRadius: BorderRadius.circular(8),
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
                                         ),
                                         child: Stack(
                                           alignment: Alignment.bottomCenter,
@@ -230,9 +315,10 @@ class MedicationsScreen extends StatelessWidget {
                                                 color: percentage == 1.0
                                                     ? const Color(0xFF10B981)
                                                     : percentage >= 0.5
-                                                        ? const Color(0xFFFCD34D)
-                                                        : const Color(0xFFEF4444),
-                                                borderRadius: BorderRadius.circular(8),
+                                                    ? const Color(0xFFFCD34D)
+                                                    : const Color(0xFFEF4444),
+                                                borderRadius:
+                                                    BorderRadius.circular(8),
                                               ),
                                             ),
                                           ],
@@ -286,7 +372,7 @@ class MedicationsScreen extends StatelessWidget {
                                 borderRadius: BorderRadius.circular(12),
                                 boxShadow: [
                                   BoxShadow(
-                                      color: Colors.black.withValues(alpha: 0.05),
+                                    color: Colors.black.withValues(alpha: 0.05),
                                     blurRadius: 8,
                                   ),
                                 ],
@@ -296,7 +382,8 @@ class MedicationsScreen extends StatelessWidget {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
                                     children: [
                                       Row(
                                         children: [
@@ -305,7 +392,8 @@ class MedicationsScreen extends StatelessWidget {
                                             height: 50,
                                             decoration: BoxDecoration(
                                               color: med.containerColor,
-                                              borderRadius: BorderRadius.circular(10),
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
                                             ),
                                             child: Icon(
                                               Icons.medication_outlined,
@@ -315,7 +403,8 @@ class MedicationsScreen extends StatelessWidget {
                                           ),
                                           const SizedBox(width: 12),
                                           Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
                                             children: [
                                               Text(
                                                 med.name,
@@ -338,7 +427,9 @@ class MedicationsScreen extends StatelessWidget {
                                       ),
                                       GestureDetector(
                                         onTap: () {
-                                          medProvider.toggleMedicationTaken(med.id);
+                                          medProvider.toggleMedicationTaken(
+                                            med.id,
+                                          );
                                         },
                                         child: Container(
                                           width: 28,
@@ -346,10 +437,14 @@ class MedicationsScreen extends StatelessWidget {
                                           decoration: BoxDecoration(
                                             shape: BoxShape.circle,
                                             border: Border.all(
-                                              color: isTakenToday ? Colors.green : Colors.grey[300]!,
+                                              color: isTakenToday
+                                                  ? Colors.green
+                                                  : Colors.grey[300]!,
                                               width: 2,
                                             ),
-                                            color: isTakenToday ? Colors.green : Colors.transparent,
+                                            color: isTakenToday
+                                                ? Colors.green
+                                                : Colors.transparent,
                                           ),
                                           child: isTakenToday
                                               ? const Icon(
@@ -363,13 +458,22 @@ class MedicationsScreen extends StatelessWidget {
                                       Row(
                                         children: [
                                           IconButton(
-                                            icon: const Icon(Icons.edit_outlined, color: Color(0xFF030213)),
-                                            onPressed: () => _showForm(context, med),
+                                            icon: const Icon(
+                                              Icons.edit_outlined,
+                                              color: Color(0xFF030213),
+                                            ),
+                                            onPressed: () =>
+                                                _showForm(context, med),
                                           ),
                                           IconButton(
-                                            icon: const Icon(Icons.delete_outline, color: Colors.red),
+                                            icon: const Icon(
+                                              Icons.delete_outline,
+                                              color: Colors.red,
+                                            ),
                                             onPressed: () {
-                                              medProvider.deleteMedication(med.id);
+                                              medProvider.deleteMedication(
+                                                med.id,
+                                              );
                                             },
                                           ),
                                         ],
@@ -388,47 +492,71 @@ class MedicationsScreen extends StatelessWidget {
                                   const SizedBox(height: 8),
                                   Row(
                                     children: med.times
-                                        .map((time) => Padding(
-                                          padding: const EdgeInsets.only(right: 8),
-                                          child: Container(
-                                            decoration: BoxDecoration(
-                                              color: Colors.grey[100],
-                                              borderRadius: BorderRadius.circular(6),
+                                        .map(
+                                          (time) => Padding(
+                                            padding: const EdgeInsets.only(
+                                              right: 8,
                                             ),
-                                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                            child: Row(
-                                              children: [
-                                                Icon(Icons.access_time, size: 12, color: Colors.grey[600]),
-                                                const SizedBox(width: 4),
-                                                Text(
-                                                  time,
-                                                  style: TextStyle(
-                                                    fontSize: 11,
+                                            child: Container(
+                                              decoration: BoxDecoration(
+                                                color: Colors.grey[100],
+                                                borderRadius:
+                                                    BorderRadius.circular(6),
+                                              ),
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal: 8,
+                                                    vertical: 4,
+                                                  ),
+                                              child: Row(
+                                                children: [
+                                                  Icon(
+                                                    Icons.access_time,
+                                                    size: 12,
                                                     color: Colors.grey[600],
                                                   ),
-                                                ),
-                                              ],
+                                                  const SizedBox(width: 4),
+                                                  Text(
+                                                    time,
+                                                    style: TextStyle(
+                                                      fontSize: 11,
+                                                      color: Colors.grey[600],
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
                                             ),
                                           ),
-                                        ))
+                                        )
                                         .toList(),
                                   ),
-                                  if (isTakenToday && med.takenDateTime != null) ...[
+                                  if (isTakenToday &&
+                                      med.takenDateTime != null) ...[
                                     const SizedBox(height: 12),
                                     Container(
                                       decoration: BoxDecoration(
                                         color: const Color(0xFFECFDF5),
                                         borderRadius: BorderRadius.circular(6),
-                                        border: Border.all(color: const Color(0xAA10B981)),
+                                        border: Border.all(
+                                          color: const Color(0xAA10B981),
+                                        ),
                                       ),
-                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                        vertical: 6,
+                                      ),
                                       child: Row(
                                         children: [
-                                          Icon(Icons.check_circle, size: 14, color: Colors.green[700]),
+                                          Icon(
+                                            Icons.check_circle,
+                                            size: 14,
+                                            color: Colors.green[700],
+                                          ),
                                           const SizedBox(width: 6),
                                           Expanded(
                                             child: Column(
-                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
                                               children: [
                                                 const Text(
                                                   'Tomado',
@@ -459,7 +587,9 @@ class MedicationsScreen extends StatelessWidget {
                           ],
                         );
                       }),
-                      const SizedBox(height: 40), // Espacio para el botón flotante
+                      const SizedBox(
+                        height: 40,
+                      ), // Espacio para el botón flotante
                     ],
                   ),
                 ),
@@ -468,10 +598,15 @@ class MedicationsScreen extends StatelessWidget {
           );
         },
       ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: const Color(0xFF030213),
+      floatingActionButton: FloatingActionButton.extended(
+        backgroundColor: const Color(0xFF1A56DB),
+        elevation: 4,
         onPressed: () => _showForm(context),
-        child: const Icon(Icons.add, color: Colors.white, size: 28),
+        icon: const Icon(Icons.add, color: Colors.white, size: 24),
+        label: const Text(
+          'Agregar',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+        ),
       ),
     );
   }
