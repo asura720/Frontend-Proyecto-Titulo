@@ -7,19 +7,25 @@ class ApiService {
   static Dio? _dio;
 
   static Dio get dio {
-    _dio ??= Dio(BaseOptions(
-      baseUrl: baseUrl,
-      connectTimeout: const Duration(seconds: 10),
-      receiveTimeout: const Duration(seconds: 10),
-    ))..interceptors.add(InterceptorsWrapper(
-      onRequest: (options, handler) async {
-        final token = await _storage.read(key: 'jwt_token');
-        if (token != null) {
-          options.headers['Authorization'] = 'Bearer $token';
-        }
-        handler.next(options);
-      },
-    ));
+    _dio ??=
+        Dio(
+            BaseOptions(
+              baseUrl: baseUrl,
+              connectTimeout: const Duration(seconds: 10),
+              receiveTimeout: const Duration(seconds: 10),
+            ),
+          )
+          ..interceptors.add(
+            InterceptorsWrapper(
+              onRequest: (options, handler) async {
+                final token = await _storage.read(key: 'jwt_token');
+                if (token != null) {
+                  options.headers['Authorization'] = 'Bearer $token';
+                }
+                handler.next(options);
+              },
+            ),
+          );
     return _dio!;
   }
 

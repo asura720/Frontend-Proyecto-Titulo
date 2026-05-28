@@ -236,7 +236,9 @@ class HomeScreen extends StatelessWidget {
                                                 ),
                                               ),
                                               Text(
-                                                med.times.first,
+                                                med.times.isNotEmpty
+                                                    ? med.times.first
+                                                    : 'Sin horario',
                                                 style: const TextStyle(
                                                   fontSize: 12,
                                                   color: Colors.grey,
@@ -284,55 +286,6 @@ class HomeScreen extends StatelessWidget {
                               ],
                             );
                           }),
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-                      // Próximos controles
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const Row(
-                            children: [
-                              Icon(
-                                Icons.calendar_today_outlined,
-                                color: Color(0xFF030213),
-                              ),
-                              SizedBox(width: 8),
-                              Text(
-                                'Próximos controles',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xFF1A1A1A),
-                                ),
-                              ),
-                            ],
-                          ),
-                          Icon(Icons.arrow_forward, color: Colors.grey[400]),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Column(
-                          children: [
-                            _ControlCard(
-                              doctorName: 'Dr. María González',
-                              specialty: 'Cardiología',
-                              date: '15 Abr, 2026',
-                              time: '10:00 AM',
-                            ),
-                            Divider(height: 1, color: Colors.grey[200]),
-                            _ControlCard(
-                              doctorName: 'Dr. Carlos Ruiz',
-                              specialty: 'Medicina General',
-                              date: '22 Abr, 2026',
-                              time: '3:30 PM',
-                            ),
-                          ],
                         ),
                       ),
                       const SizedBox(height: 24),
@@ -434,58 +387,6 @@ class _StatCard extends StatelessWidget {
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _ControlCard extends StatelessWidget {
-  final String doctorName;
-  final String specialty;
-  final String date;
-  final String time;
-
-  const _ControlCard({
-    required this.doctorName,
-    required this.specialty,
-    required this.date,
-    required this.time,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            doctorName,
-            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-          ),
-          Text(
-            specialty,
-            style: const TextStyle(fontSize: 12, color: Colors.grey),
-          ),
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              const Icon(Icons.calendar_today, size: 14, color: Colors.grey),
-              const SizedBox(width: 4),
-              Text(
-                date,
-                style: const TextStyle(fontSize: 12, color: Colors.grey),
-              ),
-              const SizedBox(width: 12),
-              const Icon(Icons.access_time, size: 14, color: Colors.grey),
-              const SizedBox(width: 4),
-              Text(
-                time,
-                style: const TextStyle(fontSize: 12, color: Colors.grey),
-              ),
-            ],
-          ),
-        ],
       ),
     );
   }

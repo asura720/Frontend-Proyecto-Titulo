@@ -96,6 +96,8 @@ class AuthProvider extends ChangeNotifier {
     } catch (_) {}
   }
 
+  Future<void> refreshProfile() => _loadProfile();
+
   Future<bool> updateProfile({
     required String name,
     required String phone,

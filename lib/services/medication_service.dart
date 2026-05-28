@@ -6,8 +6,12 @@ class MedicationService {
     return List<Map<String, dynamic>>.from(response.data);
   }
 
-  static Future<Map<String, dynamic>> createMedication(Map<String, dynamic> data) async {
-    final response = await ApiService.dio.post('/api/medications', data: data);
+  static Future<Map<String, dynamic>> createMedication(
+    Map<String, dynamic> data, {
+    String? forUserId,
+  }) async {
+    final body = forUserId != null ? {...data, 'userId': int.tryParse(forUserId)} : data;
+    final response = await ApiService.dio.post('/api/medications', data: body);
     return Map<String, dynamic>.from(response.data);
   }
 

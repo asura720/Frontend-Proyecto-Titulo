@@ -1,10 +1,68 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/medication_provider.dart';
+import '../providers/auth_provider.dart';
+import '../services/vinculacion_service.dart';
 import '../models/medication.dart';
 
 class MedicationsScreen extends StatelessWidget {
   const MedicationsScreen({super.key});
+
+  // El paciente sin permiso no puede agregar; se le ofrece solicitarlo al cuidador
+  Future<void> _handleAdd(BuildContext context) async {
+    final role = context.read<AuthProvider>().currentUser?.role ?? 'INDEPENDIENTE';
+
+    if (role != 'PACIENTE') {
+      _showForm(context);
+      return;
+    }
+
+    try {
+      final permiso = await VinculacionService.getMiPermiso();
+      if (!context.mounted) return;
+      if (permiso['puedeGestionar'] == true) {
+        _showForm(context);
+      } else {
+        _showSolicitarPermiso(context, permiso['solicitudPendiente'] == true);
+      }
+    } catch (_) {
+      // Paciente sin cuidador vinculado: gestiona normalmente
+      if (context.mounted) _showForm(context);
+    }
+  }
+
+  void _showSolicitarPermiso(BuildContext context, bool yaPendiente) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Permiso requerido'),
+        content: Text(yaPendiente
+            ? 'Ya enviaste una solicitud. Espera a que tu cuidador la autorice.'
+            : 'Para agregar tus propios medicamentos necesitas que tu cuidador te autorice. ¿Enviar solicitud?'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cerrar')),
+          if (!yaPendiente)
+            ElevatedButton(
+              onPressed: () async {
+                try {
+                  await VinculacionService.solicitarPermiso();
+                } catch (_) {}
+                if (ctx.mounted) Navigator.pop(ctx);
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Solicitud enviada a tu cuidador'),
+                      backgroundColor: Color(0xFF10B981),
+                    ),
+                  );
+                }
+              },
+              child: const Text('Solicitar permiso'),
+            ),
+        ],
+      ),
+    );
+  }
 
   void _showForm(BuildContext context, [Medication? medication]) {
     final nameController = TextEditingController(text: medication?.name ?? '');
@@ -566,7 +624,7 @@ class MedicationsScreen extends StatelessWidget {
       floatingActionButton: FloatingActionButton.extended(
         backgroundColor: const Color(0xFF1A56DB),
         elevation: 4,
-        onPressed: () => _showForm(context),
+        onPressed: () => _handleAdd(context),
         icon: const Icon(Icons.add, color: Colors.white, size: 24),
         label: const Text(
           'Agregar',

@@ -303,13 +303,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               () {},
                             ),
                             const Divider(height: 1, indent: 56),
-                            _buildConfigItemWithArrow(
-                              'Descargar mis datos',
-                              'Exportar información personal',
-                              Icons.download,
-                              () {},
-                            ),
-                            const Divider(height: 1, indent: 56),
                             _buildConfigItemWithArrowDangerous(
                               'Eliminar cuenta',
                               'Acción permanente e irreversible',
